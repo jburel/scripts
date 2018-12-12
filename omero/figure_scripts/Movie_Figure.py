@@ -32,7 +32,7 @@ Saves the figure as a jpg or png attached to the first image in the figure.
 @since 3.0
 
 """
-
+from __future__ import print_function
 import omero.scripts as scripts
 import omero.util.image_utils as image_utils
 import omero.util.figureUtil as figUtil

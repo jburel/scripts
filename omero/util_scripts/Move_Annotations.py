@@ -19,6 +19,7 @@
 
 """Moves Annotations from Images to their parent Wells."""
 
+from __future__ import print_function
 import omero.scripts as scripts
 from omero.gateway import BlitzGateway
 from omero.model import ExperimenterI, \

@@ -21,7 +21,7 @@
 
 """This script exports ROI intensities for selected images."""
 
-
+from __future__ import print_function
 import omero.scripts as scripts
 from omero.gateway import BlitzGateway
 from omero.rtypes import unwrap, rstring, rlong, robject
