@@ -226,7 +226,7 @@ def save_planes_for_image(conn, image, size_c, split_cs, merged_cs,
     if not renderingEngine.lookupRenderingDef(pixelsId):
         renderingEngine.resetDefaults()
     if not renderingEngine.lookupRenderingDef(pixelsId):
-        raise "Failed to lookup Rendering Def"
+        raise Exception("Failed to lookup Rendering Def")
     renderingEngine.load()
     """
 
