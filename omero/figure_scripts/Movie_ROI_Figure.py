@@ -49,7 +49,7 @@ from omero.constants.namespaces import NSCREATED
 import omero.model
 from omero.constants.projection import ProjectionType
 import os
-import StringIO
+import io
 from datetime import date
 
 try:
@@ -69,7 +69,7 @@ def log(text):
     """
     Adds the text to a list of logs. Compiled into figure legend at the end.
     """
-    print text
+    print(text)
     logStrings.append(text)
 
 
@@ -137,7 +137,7 @@ def getROImovieView(re, queryService, pixels, timeShapeMap, mergedIndexes,
     if not re.lookupRenderingDef(pixelsId):
         re.resetDefaults()
     if not re.lookupRenderingDef(pixelsId):
-        raise "Failed to lookup Rendering Def"
+        raise Exception("Failed to lookup Rendering Def")
     re.load()
 
     # now get each channel in greyscale (or colour)
@@ -154,11 +154,11 @@ def getROImovieView(re, queryService, pixels, timeShapeMap, mergedIndexes,
         if i >= sizeC or i < 0:
             channelMismatch = True
         else:
-            print "Turning on channel:", i
+            print("Turning on channel:", i)
             re.setActive(i, True)
             if i in mergedColours:
                 rgba = mergedColours[i]
-                print "Setting rgba", rgba
+                print("Setting rgba", rgba)
                 re.setRGBA(i, *rgba)
 
     # get the combined image, using the existing rendering settings
@@ -173,7 +173,7 @@ def getROImovieView(re, queryService, pixels, timeShapeMap, mergedIndexes,
     timeLabels = figUtil.getTimeLabels(
         queryService, pixelsId, timeIndexes, sizeT, None, showRoiDuration)
     # The last value of the list will be the Units used to display time
-    print "Time label units are:", timeLabels[-1]
+    print("Time label units are:", timeLabels[-1])
 
     fullFirstFrame = None
     for t, timepoint in enumerate(timeIndexes):
@@ -186,13 +186,13 @@ def getROImovieView(re, queryService, pixels, timeShapeMap, mergedIndexes,
 
         merged = re.renderProjectedCompressed(
             algorithm, timepoint, stepping, proStart, proEnd)
-        fullMergedImage = Image.open(StringIO.StringIO(merged))
+        fullMergedImage = Image.open(io.StringIO(merged))
         if fullFirstFrame is None:
             fullFirstFrame = fullMergedImage
         roiMergedImage = fullMergedImage.crop(box)
         # make sure this is not just a lazy copy of the full image
         roiMergedImage.load()
-        if roiZoom is not 1:
+        if roiZoom != 1:
             newSize = (int(roiWidth*roiZoom), int(roiHeight*roiZoom))
             roiMergedImage = roiMergedImage.resize(newSize)
         panelWidth = roiMergedImage.size[0]
@@ -581,7 +581,7 @@ def roiFigure(conn, commandArgs):
         w = commandArgs["Width"]
         try:
             width = int(w)
-        except:
+        except Exception:
             log("Invalid width: %s Using default value: %d" % (str(w), sizeX))
 
     height = sizeY
@@ -589,7 +589,7 @@ def roiFigure(conn, commandArgs):
         h = commandArgs["Height"]
         try:
             height = int(h)
-        except:
+        except Exception:
             log("Invalid height: %s Using default value" % (str(h), sizeY))
 
     log("Image dimensions for all panels (pixels): width: %d  height: %d"
@@ -600,7 +600,7 @@ def roiFigure(conn, commandArgs):
         # convert to 0-based
         mergedIndexes = [c-1 for c in commandArgs["Merged_Channels"]]
     else:
-        mergedIndexes = range(sizeC)  # show all
+        mergedIndexes = list(range(sizeC))  # show all
     mergedIndexes.reverse()
 
     #  if no colours added, use existing rendering settings.
@@ -632,7 +632,7 @@ def roiFigure(conn, commandArgs):
                 scalebar = None
             else:
                 log("Scalebar is %d microns" % scalebar)
-        except:
+        except Exception:
             log("Invalid value for scalebar: %s" % str(sb))
             scalebar = None
 
@@ -662,7 +662,7 @@ def roiFigure(conn, commandArgs):
 
     spacer = (width/50) + 2
 
-    print "showRoiDuration", showRoiDuration
+    print("showRoiDuration", showRoiDuration)
     fig = getSplitView(
         conn, imageIds, pixelIds, mergedIndexes, mergedColours, width, height,
         imageLabels, spacer, algorithm, stepping, scalebar, overlayColour,
@@ -728,9 +728,9 @@ def runAsScript():
 'FigureROI' by default, (not case sensitive). If matching ROI not found, use \
 any ROI."""
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
-    ckeys = COLOURS.keys()
+    ckeys = list(COLOURS.keys())
     ckeys.sort()
-    oColours = wrap(OVERLAY_COLOURS.keys())
+    oColours = wrap(list(OVERLAY_COLOURS.keys()))
 
     client = scripts.client(
         'Movie_ROI_Figure.py',
@@ -828,7 +828,7 @@ See http://help.openmicroscopy.org/scripts.html""",
         conn = BlitzGateway(client_obj=client)
 
         commandArgs = client.getInputs(unwrap=True)
-        print commandArgs
+        print(commandArgs)
 
         # call the main script, attaching resulting figure to Image. Returns
         # the id of the originalFileLink child. (ID object, not value)
@@ -841,6 +841,7 @@ See http://help.openmicroscopy.org/scripts.html""",
 
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

@@ -65,9 +65,9 @@ def log(text):
     """
     try:
         text = text.encode('utf8')
-    except:
+    except Exception:
         pass
-    print text
+    print(text)
     logLines.append(text)
 
 
@@ -79,7 +79,7 @@ def sortImagesByTag(tagIds, imgTags):
     letters = 'abcdefghijklmnopqrstuvwxyz'
     # assume we have less than 26 tags!
     sortedImages = []
-    for iid, tagIdList in imgTags.items():
+    for iid, tagIdList in list(imgTags.items()):
         orderedIndexes = []
         orderedTags = []
         for i, tid in enumerate(tagIds):
@@ -178,13 +178,13 @@ def paintDatasetCanvas(conn, images, title, tagIds=None, showUntagged=False,
         annotations = metadataService.loadAnnotations(
             "Image", dsImageIds, types, None, None)
         # filter images by annotation...
-        for imageId, tags in annotations.items():
+        for imageId, tags in list(annotations.items()):
             imgTagIds = []
             for tag in tags:
                 tagId = tag.getId().getValue()
                 # make a dict of tag-names
                 tagNames[tagId] = tag.getTextValue().getValue().decode('utf8')
-                print "     Tag:", tagId, tagId in tagIds
+                print("     Tag:", tagId, tagId in tagIds)
                 imgTagIds.append(tagId)
             imgTags[imageId] = imgTagIds
 
@@ -236,7 +236,7 @@ def paintDatasetCanvas(conn, images, title, tagIds=None, showUntagged=False,
             maxTagNameWidth = max(maxTagNameWidth,
                                   font.getsize("Not Tagged")[0])
 
-        print "toptagSets", toptagSets
+        print("toptagSets", toptagSets)
 
         tagSubPanes = []
 
@@ -537,7 +537,7 @@ See http://help.openmicroscopy.org/scripts.html""",
         conn = BlitzGateway(client_obj=client)
 
         commandArgs = client.getInputs(unwrap=True)
-        print commandArgs
+        print(commandArgs)
 
         # Makes the figure and attaches it to Project/Dataset. Returns
         # FileAnnotationI object
@@ -549,6 +549,7 @@ See http://help.openmicroscopy.org/scripts.html""",
             client.setOutput("File_Annotation", robject(fileAnnotation._obj))
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

@@ -49,7 +49,7 @@ from omero.rtypes import rlong, robject, rstring, wrap, unwrap
 import os
 from omero.constants.namespaces import NSCREATED
 from omero.constants.projection import ProjectionType
-import StringIO
+import io
 from datetime import date
 
 try:
@@ -69,7 +69,7 @@ def log(text):
     """
     Adds the text to a list of logs. Compiled into figure legend at the end.
     """
-    print text
+    print(text)
     logStrings.append(text)
 
 
@@ -125,7 +125,7 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
     if not re.lookupRenderingDef(pixelsId):
         re.resetDefaults()
     if not re.lookupRenderingDef(pixelsId):
-        raise "Failed to lookup Rendering Def"
+        raise Exception("Failed to lookup Rendering Def")
     re.load()
 
     # if we are missing some merged colours, get them from rendering engine.
@@ -133,7 +133,7 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
         if index not in mergedColours:
             color = tuple(re.getRGBA(index))
             mergedColours[index] = color
-            print "Adding colour to index", color, index
+            print("Adding colour to index", color, index)
 
     # now get each channel in greyscale (or colour)
     # a list of renderedImages (data as Strings) for the split-view row
@@ -170,8 +170,8 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
                 # if it's a single plane, we can render a region (region not
                 # supported with projection)
                 planeDef = omero.romio.PlaneDef()
-                planeDef.z = long(proStart)
-                planeDef.t = long(tIndex)
+                planeDef.z = int(proStart)
+                planeDef.t = int(tIndex)
                 regionDef = omero.romio.RegionDef()
                 regionDef.x = roiX
                 regionDef.y = roiY
@@ -179,15 +179,15 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
                 regionDef.height = roiHeight
                 planeDef.region = regionDef
                 rPlane = re.renderCompressed(planeDef)
-                roiImage = Image.open(StringIO.StringIO(rPlane))
+                roiImage = Image.open(io.StringIO(rPlane))
             else:
                 projection = re.renderProjectedCompressed(
                     algorithm, tIndex, stepping, proStart, proEnd)
-                fullImage = Image.open(StringIO.StringIO(projection))
+                fullImage = Image.open(io.StringIO(projection))
                 roiImage = fullImage.crop(box)
                 roiImage.load()
                 # hoping that when we zoom, don't zoom fullImage
-            if roiZoom is not 1:
+            if roiZoom != 1:
                 newSize = (int(roiWidth*roiZoom), int(roiHeight*roiZoom))
                 roiImage = roiImage.resize(newSize, Image.ANTIALIAS)
             renderedImages.append(roiImage)
@@ -215,12 +215,12 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
         planeDef.z = proStart
         planeDef.t = tIndex
         merged = re.renderCompressed(planeDef)
-    fullMergedImage = Image.open(StringIO.StringIO(merged))
+    fullMergedImage = Image.open(io.StringIO(merged))
     roiMergedImage = fullMergedImage.crop(box)
     # make sure this is not just a lazy copy of the full image
     roiMergedImage.load()
 
-    if roiZoom is not 1:
+    if roiZoom != 1:
         newSize = (int(roiWidth*roiZoom), int(roiHeight*roiZoom))
         roiMergedImage = roiMergedImage.resize(newSize, Image.ANTIALIAS)
 
@@ -244,8 +244,8 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
     # no spaces around panels
     canvasWidth = ((panelWidth + spacer) * imageCount) - spacer
     canvasHeight = roiMergedImage.size[1] + topSpacer
-    print "imageCount", imageCount, "canvasWidth", canvasWidth, \
-        "canvasHeight", canvasHeight
+    print("imageCount", imageCount, "canvasWidth", canvasWidth,
+          "canvasHeight", canvasHeight)
     size = (canvasWidth, canvasHeight)
     # create a canvas of appropriate width, height
     canvas = Image.new(mode, size, white)
@@ -255,7 +255,7 @@ def getROIsplitView(re, pixels, zStart, zEnd, splitIndexes, channelNames,
     panelY = topSpacer
     # paste the split images in, with channel labels
     draw = ImageDraw.Draw(canvas)
-    print "mergedColours", mergedColours
+    print("mergedColours", mergedColours)
     for i, index in enumerate(splitIndexes):
         label = channelNames[index]
         indent = (panelWidth - (font.getsize(label)[0])) / 2
@@ -654,7 +654,7 @@ def roiFigure(conn, commandArgs):
         w = commandArgs["Width"]
         try:
             width = int(w)
-        except:
+        except Exception:
             log("Invalid width: %s Using default value: %d" % (str(w), sizeX))
 
     height = sizeY
@@ -662,7 +662,7 @@ def roiFigure(conn, commandArgs):
         h = commandArgs["Height"]
         try:
             height = int(h)
-        except:
+        except Exception:
             log("Invalid height: %s Using default value" % (str(h), sizeY))
 
     log("Image dimensions for all panels (pixels): width: %d  height: %d"
@@ -678,8 +678,8 @@ def roiFigure(conn, commandArgs):
                 rgb = int(rgb)
                 cIndex = int(c)
             except ValueError:
-                print "Merged_Colours map should be index:rgbInt. Not %s:%s" \
-                    % (c, rgb)
+                print("Merged_Colours map should be index:rgbInt. Not %s:%s"
+                      % (c, rgb))
                 continue
             rgba = imgUtil.RGBIntToRGBA(rgb)
             mergedColours[cIndex] = rgba
@@ -687,7 +687,7 @@ def roiFigure(conn, commandArgs):
         mergedIndexes.sort()
     # make sure we have some merged channels
     if len(mergedIndexes) == 0:
-        mergedIndexes = range(sizeC)
+        mergedIndexes = list(range(sizeC))
     mergedIndexes.reverse()
 
     mergedNames = False
@@ -739,7 +739,7 @@ def roiFigure(conn, commandArgs):
                 scalebar = None
             else:
                 log("Scalebar is %d microns" % scalebar)
-        except:
+        except Exception:
             log("Invalid value for scalebar: %s" % str(sb))
             scalebar = None
 
@@ -827,9 +827,9 @@ def runAsScript():
 'FigureROI' by default, (not case sensitive). If matching ROI not found, use \
 any ROI."""
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
-    ckeys = COLOURS.keys()
+    ckeys = list(COLOURS.keys())
     ckeys.sort()
-    oColours = wrap(OVERLAY_COLOURS.keys())
+    oColours = wrap(list(OVERLAY_COLOURS.keys()))
 
     client = scripts.client(
         'ROI_Split_Figure.py',
@@ -929,7 +929,7 @@ See http://help.openmicroscopy.org/scripts.html""",
         conn = BlitzGateway(client_obj=client)
 
         commandArgs = client.getInputs(unwrap=True)
-        print commandArgs
+        print(commandArgs)
 
         # call the main script, attaching resulting figure to Image. Returns
         # the id of the originalFileLink child. (ID object, not value)
@@ -942,6 +942,7 @@ See http://help.openmicroscopy.org/scripts.html""",
 
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

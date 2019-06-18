@@ -84,8 +84,8 @@ def processImages(conn, scriptParams):
     csvData = []
 
     for image in images:
-        print "\nAnalysing Image: %s ID: %s" \
-            % (image.getName(), image.getId())
+        print("\nAnalysing Image: %s ID: %s"
+              % (image.getName(), image.getId()))
 
         if image.getSizeT() > 1:
             message += "%s ID: %s appears to be a time-lapse Image," \
@@ -159,10 +159,10 @@ def processImages(conn, scriptParams):
             tableString += "\n"
             tableString += colNames
             tableString += tableData
-            print tableString
+            print(tableString)
             csvData.append(tableString)
         else:
-            print "Found NO lines or polylines to analyze for Image"
+            print("Found NO lines or polylines to analyze for Image")
 
     iids = [str(i.getId()) for i in images]
     toLinkCsv = [i.getId() for i in images if i.canAnnotate()]
@@ -180,7 +180,7 @@ def processImages(conn, scriptParams):
     if len(toLinkCsv) == 0:
         faMessage += " but could not attach to images."
     for iid in toLinkCsv:
-        print "linking csv to Image: ", iid
+        print("linking csv to Image: ", iid)
         link = ImageAnnotationLinkI()
         link.parent = ImageI(iid, False)
         link.child = fileAnn._obj
@@ -227,7 +227,7 @@ of movement, saved as an Excel / CSV file.""",
 
     try:
         scriptParams = client.getInputs(unwrap=True)
-        print scriptParams
+        print(scriptParams)
 
         # wrap client to use the Blitz Gateway
         conn = BlitzGateway(client_obj=client)

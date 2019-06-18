@@ -80,7 +80,7 @@ def printDuration(output=True):
     if startTime == 0:
         startTime = time.time()
     if output:
-        print "Script timer = %s secs" % (time.time() - startTime)
+        print("Script timer = %s secs" % (time.time() - startTime))
 
 
 def getPlane(rawPixelStore, pixels, theZ, theC, theT):
@@ -126,20 +126,20 @@ def manuallyAssignImages(parameterMap, imageIds, sourceZ):
             if sizeParam in parameterMap:
                 dimSizes[i] = parameterMap[sizeParam]
             else:
-                print "calculate size of dim:", d, dim
-                print "existing dim sizes:", dimSizes
+                print("calculate size of dim:", d, dim)
+                print("existing dim sizes:", dimSizes)
                 dimSizes[i] = len(imageIds) / \
                     (dimSizes[0] * dimSizes[1] * dimSizes[2])
-                print "new dim sizes:", dimSizes
+                print("new dim sizes:", dimSizes)
 
-    print "dims", dims
-    print "dimSizes", dimSizes
+    print("dims", dims)
+    print("dimSizes", dimSizes)
 
     imageIndex = 0
 
     imageMap = {}   # map of (z,c,t) : imageId
 
-    print ""
+    print("")
     for dim3 in range(dimSizes[2]):
         for dim2 in range(dimSizes[1]):
             for dim1 in range(dimSizes[0]):
@@ -160,17 +160,17 @@ def manuallyAssignImages(parameterMap, imageIds, sourceZ):
                         sizeZ = max(sizeZ, z+1)
                 # handle Z stacks...
                 if sourceZ > 1:
-                    print "Z-STACK ImageId: %s to c,t: %s, %s" \
-                        % (imageIds[imageIndex], c, t)
+                    print("Z-STACK ImageId: %s to c,t: %s, %s"
+                          % (imageIds[imageIndex], c, t))
                     for srcZ in range(sourceZ):
                         imageMap[(srcZ, c, t)] = (imageIds[imageIndex], srcZ)
                 else:
-                    print "Assign ImageId: %s to z,c,t: %s, %s, %s" \
-                        % (imageIds[imageIndex], z, c, t)
+                    print("Assign ImageId: %s to z,c,t: %s, %s, %s"
+                          % (imageIds[imageIndex], z, c, t))
                     imageMap[(z, c, t)] = (imageIds[imageIndex], 0)
                 imageIndex += 1
 
-    print "sizeZ: %s  sizeC: %s  sizeT: %s" % (sizeZ, sizeC, sizeT)
+    print("sizeZ: %s  sizeC: %s  sizeT: %s" % (sizeZ, sizeC, sizeT))
 
     return (sizeZ, sizeC, sizeT, imageMap)
 
@@ -237,8 +237,8 @@ def assignImagesByRegex(parameterMap, imageIds, queryService, sourceZ,
         # we have T and C now. Need to check if source images are Z stacks
         if sourceZ > 1:
             zStart = 0
-            print "Image STACK ID: %s Name: %s is C: %s T: %s"\
-                "channelName: %s" % (iId, name, theC, theT, cName)
+            print("Image STACK ID: %s Name: %s is C: %s T: %s"
+                  "channelName: %s" % (iId, name, theC, theT, cName))
             for srcZ in range(sourceZ):
                 imageMap[(srcZ, theC, theT)] = (iId, srcZ)
         else:
@@ -256,21 +256,21 @@ def assignImagesByRegex(parameterMap, imageIds, queryService, sourceZ,
             else:
                 zStart = min(zStart, theZ)
 
-            print "Image ID: %s Name: %s is Z: %s C: %s T: %s "\
-                "channelName: %s" % (iId, name, theZ, theC, theT, cName)
+            print("Image ID: %s Name: %s is Z: %s C: %s T: %s "
+                  "channelName: %s" % (iId, name, theZ, theC, theT, cName))
             # every plane comes from z=0
             imageMap[(theZ, theC, theT)] = (iId, 0)
 
-    print "assignImagesByRegex tStart:", tStart, "zStart:", zStart,\
-        "maxT+1:", sizeT, "maxZ+1:", sizeZ
+    print("assignImagesByRegex tStart:", tStart, "zStart:", zStart,
+          "maxT+1:", sizeT, "maxZ+1:", sizeZ)
 
     # if indexes were 1-based (or higher), need to shift indexes accordingly.
     if tStart > 0 or zStart > 0:
         sizeT = sizeT-tStart
         sizeZ = sizeZ-zStart
-        print "   sizeT:", sizeT, "sizeZ:", sizeZ
+        print("   sizeT:", sizeT, "sizeZ:", sizeZ)
         iMap = {}
-        for key, value in imageMap.items():
+        for key, value in list(imageMap.items()):
             z, c, t = key
             iMap[(z-zStart, c, t-tStart)] = value
     else:
@@ -312,14 +312,14 @@ def makeSingleImage(services, parameterMap, imageIds, dataset, colourMap):
     updateService = services["updateService"]
     containerService = services["containerService"]
 
-    print "makeSingleImage: imageId count:", len(imageIds)
+    print("makeSingleImage: imageId count:", len(imageIds))
 
     # Filter images by name if user has specified filter.
     idNameMap = None
     if "Filter_Names" in parameterMap:
         filterString = parameterMap["Filter_Names"]
         if len(filterString) > 0:
-            print "Filtering images for names containing '%s'" % filterString
+            print("Filtering images for names containing '%s'" % filterString)
             idNameMap = getImageNames(queryService, imageIds)
             imageIds = [i for i in imageIds
                         if idNameMap[i].find(filterString) > -1]
@@ -352,7 +352,7 @@ def makeSingleImage(services, parameterMap, imageIds, dataset, colourMap):
             parameterMap, imageIds, queryService, sourceZ, idNameMap)
         sizeC = len(cNames)
 
-    print "sizeZ: %s  sizeC: %s  sizeT: %s" % (sizeZ, sizeC, sizeT)
+    print("sizeZ: %s  sizeC: %s  sizeT: %s" % (sizeZ, sizeC, sizeT))
 
     if "Channel_Names" in parameterMap:
         for c, name in enumerate(parameterMap["Channel_Names"]):
@@ -361,7 +361,7 @@ def makeSingleImage(services, parameterMap, imageIds, dataset, colourMap):
     imageName = "combinedImage"
     description = "created from image Ids: %s" % imageIds
 
-    channelList = range(sizeC)
+    channelList = list(range(sizeC))
     iId = pixelsService.createImage(sizeX, sizeY, sizeZ, sizeT, channelList,
                                     pixelsType, imageName, description)
     image = containerService.getImages("Image", [iId.getValue()], None)[0]
@@ -376,29 +376,29 @@ def makeSingleImage(services, parameterMap, imageIds, dataset, colourMap):
             for theT in range(sizeT):
                 if (theZ, theC, theT) in imageMap:
                     imageId, planeZ = imageMap[(theZ, theC, theT)]
-                    print "Getting plane from Image ID:", imageId
+                    print("Getting plane from Image ID:", imageId)
                     query_string = "select p from Pixels p join fetch "\
                         "p.image i join fetch p.pixelsType pt where "\
                         "i.id='%d'" % imageId
                     pixels = queryService.findByQuery(query_string, None)
                     plane2D = getPlane(rawPixelStore, pixels, planeZ, 0, 0)
                 else:
-                    print "Creating blank plane for theZ, theC, theT",\
-                        theZ, theC, theT
+                    print("Creating blank plane for theZ, theC, theT",
+                          theZ, theC, theT)
                     plane2D = zeros((sizeY, sizeX))
-                print "Uploading plane: theZ: %s, theC: %s, theT: %s"\
-                    % (theZ, theC, theT)
+                print("Uploading plane: theZ: %s, theC: %s, theT: %s"
+                      % (theZ, theC, theT))
                 scriptUtil.uploadPlaneByRow(
                     rawPixelStoreUpload, plane2D, theZ, theC, theT)
                 minValue = min(minValue, plane2D.min())
                 maxValue = max(maxValue, plane2D.max())
-        print "Setting the min, max ", minValue, maxValue
+        print("Setting the min, max ", minValue, maxValue)
         pixelsService.setChannelGlobalMinMax(pixelsId, theC, float(minValue),
                                              float(maxValue))
         rgba = COLOURS["White"]
         if theC in colourMap:
             rgba = colourMap[theC]
-            print "Setting the Channel colour:", rgba
+            print("Setting the Channel colour:", rgba)
         scriptUtil.resetRenderingSettings(renderingEngine, pixelsId, theC,
                                           minValue, maxValue, rgba)
 
@@ -447,14 +447,14 @@ def combineImages(conn, parameterMap):
         for c, colour in enumerate(parameterMap["Channel_Colours"]):
             if colour in COLOURS:
                 colourMap[c] = COLOURS[colour]
-    print "colourMap", colourMap
+    print("colourMap", colourMap)
 
     # Get images or datasets
     message = ""
     objects, logMessage = scriptUtil.getObjects(conn, parameterMap)
     message += logMessage
     if not objects:
-        print message
+        print(message)
         return None, message
 
     # get the images IDs from list (in order) or dataset (sorted by name)
@@ -474,11 +474,11 @@ def combineImages(conn, parameterMap):
             for link in image.iterateDatasetLinks():
                 ds = link.parent
                 dataset = conn.getObject("Dataset", ds.id.val)
-                print "Dataset", dataset.getName()
+                print("Dataset", dataset.getName())
                 break    # only use 1st dataset
         else:
-            print "No Dataset found for Image ID: %s  Combined Image will "\
-                "not be put into dataset." % imageIds[0]
+            print("No Dataset found for Image ID: %s  Combined Image will "
+                  "not be put into dataset." % imageIds[0])
         newImg, link = makeSingleImage(services, parameterMap, imageIds,
                                        dataset, colourMap)
         if newImg:
@@ -489,7 +489,7 @@ def combineImages(conn, parameterMap):
         for dataset in objects:
             images = list(dataset.listChildren())
             if not images:
-                print "No images found for Dataset ID: %s" % dataset.getId()
+                print("No images found for Dataset ID: %s" % dataset.getId())
                 continue
             images.sort(key=lambda x: (x.getName()))
             imageIds = [i.getId() for i in images]
@@ -504,7 +504,7 @@ def combineImages(conn, parameterMap):
     for s in services:
         try:
             s.close()
-        except:
+        except Exception:
             pass
 
     if outputImages:
@@ -528,16 +528,16 @@ def runAsScript():
     """
     printDuration(False)    # start timer
 
-    ckeys = COLOURS.keys()
+    ckeys = list(COLOURS.keys())
     ckeys.sort()
     cOptions = [rstring(col) for col in ckeys]
     dataTypes = [rstring('Dataset'), rstring('Image')]
     firstDim = [rstring('Time'), rstring('Channel'), rstring('Z')]
     extraDims = [rstring(''), rstring('Time'), rstring('Channel'),
                  rstring('Z')]
-    channelRegs = [rstring(r) for r in channelRegexes.keys()]
-    zRegs = [rstring(r) for r in zRegexes.keys()]
-    tRegs = [rstring(r) for r in timeRegexes.keys()]
+    channelRegs = [rstring(r) for r in list(channelRegexes.keys())]
+    zRegs = [rstring(r) for r in list(zRegexes.keys())]
+    tRegs = [rstring(r) for r in list(timeRegexes.keys())]
 
     client = scripts.client(
         'Combine_Images.py',
@@ -627,7 +627,7 @@ See http://help.openmicroscopy.org/utility-scripts.html""",
 
     try:
         parameterMap = client.getInputs(unwrap=True)
-        print parameterMap
+        print(parameterMap)
 
         conn = BlitzGateway(client_obj=client)
 
@@ -644,6 +644,7 @@ See http://help.openmicroscopy.org/utility-scripts.html""",
     finally:
         client.closeSession()
         printDuration()
+
 
 if __name__ == "__main__":
     runAsScript()

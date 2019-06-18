@@ -47,7 +47,7 @@ from omero.gateway import BlitzGateway
 import omero
 from omero.rtypes import rint, rlong, rstring, robject, wrap
 import os
-import StringIO
+import io
 from omero.constants.namespaces import NSCREATED
 from omero.constants.projection import ProjectionType
 from datetime import date
@@ -67,7 +67,7 @@ logLines = []    # make a log / legend of the figure
 
 
 def log(text):
-    print text
+    print(text)
     logLines.append(text)
 
 
@@ -150,7 +150,7 @@ def createMovieFigure(conn, pixelIds, tIndexes, zStart, zEnd, width, height,
         if not re.lookupRenderingDef(pixelsId):
             re.resetDefaults()
         if not re.lookupRenderingDef(pixelsId):
-            raise "Failed to lookup Rendering Def"
+            raise Exception("Failed to lookup Rendering Def")
         re.load()
 
         proStart = zStart
@@ -191,7 +191,7 @@ def createMovieFigure(conn, pixelIds, tIndexes, zStart, zEnd, width, height,
                     planeDef.t = time
                     renderedImg = re.renderCompressed(planeDef)
                 # create images and resize, add to list
-                image = Image.open(StringIO.StringIO(renderedImg))
+                image = Image.open(io.StringIO(renderedImg))
                 resizedImage = imgUtil.resizeImage(image, width, height)
                 renderedImages.append(resizedImage)
 
@@ -372,7 +372,7 @@ def movieFigure(conn, commandArgs):
         timeUnits = commandArgs["Time_Units"]
         # convert from UI name to timeLabels key
         timeUnits = timeUnits.replace(" ", "_")
-    if timeUnits not in timeLabels.keys():
+    if timeUnits not in list(timeLabels.keys()):
         timeUnits = "SECS"
     log("Time units are in %s" % timeLabels[timeUnits])
 
@@ -450,9 +450,9 @@ def movieFigure(conn, commandArgs):
     if "T_Indexes" in commandArgs:
         for t in commandArgs["T_Indexes"]:
             tIndexes.append(t)
-        print "T_Indexes", tIndexes
+        print("T_Indexes", tIndexes)
     if len(tIndexes) == 0:      # if no t-indexes given, use all t-indices
-        tIndexes = range(sizeT)
+        tIndexes = list(range(sizeT))
 
     zStart = -1
     zEnd = -1
@@ -492,7 +492,7 @@ def movieFigure(conn, commandArgs):
                 scalebar = None
             else:
                 log("Scalebar is %d microns" % scalebar)
-        except:
+        except Exception:
             log("Invalid value for scalebar: %s" % str(sb))
             scalebar = None
 
@@ -558,9 +558,9 @@ def runAsScript():
     tunits = [rstring("SECS"), rstring("MINS"), rstring("HOURS"),
               rstring("MINS SECS"), rstring("HOURS MINS")]
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
-    ckeys = COLOURS.keys()
+    ckeys = list(COLOURS.keys())
     ckeys.sort()
-    oColours = wrap(OVERLAY_COLOURS.keys())
+    oColours = wrap(list(OVERLAY_COLOURS.keys()))
 
     client = scripts.client(
         'Movie_Figure.py',
@@ -662,7 +662,7 @@ See http://help.openmicroscopy.org/scripts.html""",
         conn = BlitzGateway(client_obj=client)
 
         commandArgs = client.getInputs(unwrap=True)
-        print commandArgs
+        print(commandArgs)
 
         # Makes the figure and attaches it to Image. Returns the id of the
         # originalFileLink child. (ID object, not value)
@@ -674,6 +674,7 @@ See http://help.openmicroscopy.org/scripts.html""",
             client.setOutput("File_Annotation", robject(fileAnnotation._obj))
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

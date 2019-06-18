@@ -73,7 +73,7 @@ from omero.gateway import BlitzGateway
 from omero.constants.namespaces import NSCREATED
 from omero.constants.metadata import NSMOVIE
 
-from cStringIO import StringIO
+from io import StringIO
 from types import StringTypes
 
 try:
@@ -107,7 +107,7 @@ def log(text):
     Adds lines of text to the logLines list, so they can be collected into a
     figure legend.
     """
-    print text
+    print(text)
     logLines.append(text)
 
 
@@ -165,7 +165,7 @@ def rangeFromList(list, index):
     for i in list:
         minValue = min(minValue, i[index])
         maxValue = max(maxValue, i[index])
-    return range(minValue, maxValue+1)
+    return list(range(minValue, maxValue+1))
 
 
 def calculateAquisitionTime(conn, pixelsId, cList, tzList):
@@ -317,8 +317,8 @@ def buildPlaneMapFromRanges(zRange, tRange):
 def strToRange(key):
     splitKey = key.split('-')
     if(len(splitKey) == 1):
-        return range(int(splitKey[0]), int(splitKey[0])+1)
-    return range(int(splitKey[0]), int(splitKey[1])+1)
+        return list(range(int(splitKey[0]), int(splitKey[0])+1))
+    return list(range(int(splitKey[0]), int(splitKey[1])+1))
 
 
 def unrollPlaneMap(planeMap):
@@ -358,8 +358,8 @@ def calculateRanges(sizeZ, sizeT, commandArgs):
         if(tEnd == tStart):
             tEnd = tEnd+1
 
-        zRange = range(zStart, zEnd)
-        tRange = range(tStart, tEnd)
+        zRange = list(range(zStart, zEnd))
+        tRange = list(range(tStart, tEnd))
         planeMap = buildPlaneMapFromRanges(zRange, tRange)
     else:
         map = commandArgs["Plane_Map"]
@@ -377,15 +377,15 @@ def reshape_to_fit(image, sizeX, sizeY, bg=(0, 0, 0)):
     if (image_w, image_h) == (sizeX, sizeY):
         return image
     # scale
-    print "scale...from ", image.size, " to ", sizeX, sizeY
+    print("scale...from ", image.size, " to ", sizeX, sizeY)
     ratio = min(float(sizeX) / image_w, float(sizeY) / image_h)
-    image = image.resize(map(lambda x: int(x*ratio), image.size),
+    image = image.resize([int(x*ratio) for x in image.size],
                          Image.ANTIALIAS)
-    print ratio, image.size
+    print(ratio, image.size)
     # paste
     bg = Image.new("RGBA", (sizeX, sizeY), (0, 0, 0))     # black bg
     ovlpos = (sizeX-image.size[0]) / 2, (sizeY-image.size[1]) / 2
-    print "ovlpos", ovlpos
+    print("ovlpos", ovlpos)
     bg.paste(image, ovlpos)
     return bg
 
@@ -503,7 +503,7 @@ def writeMovie(commandArgs, conn):
     if (pixels.getPhysicalSizeX() is None):
         commandArgs["Scalebar"] = 0
 
-    cRange = range(0, sizeC)
+    cRange = list(range(0, sizeC))
     cWindows = None
     cColours = None
     if "ChannelsExtended" in commandArgs and \
@@ -511,9 +511,9 @@ def writeMovie(commandArgs, conn):
         cRange = []
         cWindows = []
         cColours = []
+        p = r'^(?P<i>\d+)(\|(?P<ws>\d+)\:(?P<we>\d+))?(\$(?P<c>.+))?$'
         for c in commandArgs["ChannelsExtended"]:
-            m = re.match('^(?P<i>\d+)(\|(?P<ws>\d+)' +
-                         '\:(?P<we>\d+))?(\$(?P<c>.+))?$', c)
+            m = re.match(p, c)
             if m is not None:
                 cRange.append(int(m.group('i'))-1)
                 cWindows.append([float(m.group('ws')), float(m.group('we'))])
@@ -532,7 +532,7 @@ def writeMovie(commandArgs, conn):
             commandArgs["Show_Time"] = False
 
     frameNo = 1
-    omeroImage.setActiveChannels(map(lambda x: x+1, cRange),
+    omeroImage.setActiveChannels([x+1 for x in cRange],
                                  cWindows,
                                  cColours)
     renderingEngine = omeroImage._re
@@ -626,7 +626,7 @@ def writeMovie(commandArgs, conn):
         movieName = "%s.%s" % (movieName, ext)
 
     # spaces etc in file name cause problems
-    movieName = re.sub("[$&\;|\(\)<>' ]", "", movieName)
+    movieName = re.sub(r"[$&\;|\(\)<>' ]", "", movieName)
     framesPerSec = 2
     if "FPS" in commandArgs:
         framesPerSec = commandArgs["FPS"]
@@ -635,7 +635,7 @@ def writeMovie(commandArgs, conn):
     mimetype = formatMimetypes[format]
 
     if not os.path.exists(output):
-        print "mencoder Failed to create movie file: %s" % output
+        print("mencoder Failed to create movie file: %s" % output)
         return None, "Failed to create movie file: %s" % output
     if not commandArgs["Do_Link"]:
         originalFile = scriptUtil.createFile(
@@ -659,8 +659,8 @@ def runAsScript():
     def __init__(self, name, optional = False, out = False, description =
                  None, type = None, min = None, max = None, values = None)
     """
-    formats = wrap(formatMap.keys())    # wrap each key in it's rtype
-    ckeys = COLOURS.keys()
+    formats = wrap(list(formatMap.keys()))    # wrap each key in it's rtype
+    ckeys = list(COLOURS.keys())
     ckeys = ckeys
     ckeys.sort()
     cOptions = wrap(ckeys)
@@ -803,7 +803,7 @@ def runAsScript():
         conn = BlitzGateway(client_obj=client)
 
         commandArgs = client.getInputs(unwrap=True)
-        print commandArgs
+        print(commandArgs)
 
         fileAnnotation, message = writeMovie(commandArgs, conn)
 
@@ -813,6 +813,7 @@ def runAsScript():
             client.setOutput("File_Annotation", robject(fileAnnotation))
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

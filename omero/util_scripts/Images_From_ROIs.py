@@ -52,7 +52,7 @@ def printDuration(output=True):
     if startTime == 0:
         startTime = time.time()
     if output:
-        print "Script timer = %s secs" % (time.time() - startTime)
+        print("Script timer = %s secs" % (time.time() - startTime))
 
 
 def getRectangles(conn, imageId):
@@ -111,7 +111,7 @@ def processImage(conn, imageId, parameterMap):
 
     image = conn.getObject("Image", imageId)
     if image is None:
-        print "No image found for ID: %s" % imageId
+        print("No image found for ID: %s" % imageId)
         return
 
     parentDataset = image.getParent()
@@ -142,21 +142,21 @@ def processImage(conn, imageId, parameterMap):
         W = X2 - X
         H = Y2 - Y
         if (x, y, w, h) != (X, Y, W, H):
-            print "\nCropping ROI (x, y, w, h) %s to be within image."\
-                " New ROI: %s" % ((x, y, w, h), (X, Y, W, H))
+            print("\nCropping ROI (x, y, w, h) %s to be within image."
+                  " New ROI: %s" % ((x, y, w, h), (X, Y, W, H)))
             rois[index] = (X, Y, W, H, z1, z2, t1, t2)
 
-    print "rois"
-    print rois
+    print("rois")
+    print(rois)
 
     if len(rois) == 0:
-        print "No rectangular ROIs found for image ID: %s" % imageId
+        print("No rectangular ROIs found for image ID: %s" % imageId)
         return
 
     # if making a single stack image...
     if imageStack:
-        print "\nMaking Image stack from ROIs of Image:", imageId
-        print "physicalSize X, Y:  %s, %s" % (physicalSizeX, physicalSizeY)
+        print("\nMaking Image stack from ROIs of Image:", imageId)
+        print("physicalSize X, Y:  %s, %s" % (physicalSizeX, physicalSizeY))
         # use width and height from first roi to make sure that all are the
         # same.
         x, y, width, height, z1, z2, t1, t2 = rois[0]
@@ -180,7 +180,7 @@ def processImage(conn, imageId, parameterMap):
             newImageName = os.path.basename(imageName)
         description = "Image from ROIS on parent Image:\n  Name: %s\n"\
             "  Image ID: %d" % (imageName, imageId)
-        print description
+        print(description)
         image = conn.createImageFromNumpySeq(
             tileGen(), newImageName,
             sizeZ=len(rois), sizeC=1, sizeT=1, description=description,
@@ -203,8 +203,8 @@ def processImage(conn, imageId, parameterMap):
         iIds = []
         for r in rois:
             x, y, w, h, z1, z2, t1, t2 = r
-            print "  ROI x: %s y: %s w: %s h: %s z1: %s z2: %s t1: %s t2: %s"\
-                % (x, y, w, h, z1, z2, t1, t2)
+            print("  ROI x: %s y: %s w: %s h: %s z1: %s z2: %s t1: %s t2: %s"
+                  % (x, y, w, h, z1, z2, t1, t2))
 
             # need a tile generator to get all the planes within the ROI
             sizeZ = z2-z1 + 1
@@ -212,7 +212,7 @@ def processImage(conn, imageId, parameterMap):
             sizeC = image.getSizeC()
             zctTileList = []
             tile = (x, y, w, h)
-            print "zctTileList..."
+            print("zctTileList...")
             for z in range(z1, z2+1):
                 for c in range(sizeC):
                     for t in range(t1, t2+1):
@@ -222,7 +222,7 @@ def processImage(conn, imageId, parameterMap):
                 for i, t in enumerate(pixels.getTiles(zctTileList)):
                     yield t
 
-            print "sizeZ, sizeC, sizeT", sizeZ, sizeC, sizeT
+            print("sizeZ, sizeC, sizeT", sizeZ, sizeC, sizeT)
             description = "Created from image:\n  Name: %s\n  Image ID: %d"\
                 " \n x: %d y: %d" % (imageName, imageId, x, y)
             newImg = conn.createImageFromNumpySeq(
@@ -230,23 +230,23 @@ def processImage(conn, imageId, parameterMap):
                 sizeZ=sizeZ, sizeC=sizeC, sizeT=sizeT,
                 description=description, sourceImageId=imageId)
 
-            print "New Image Id = %s" % newImg.getId()
+            print("New Image Id = %s" % newImg.getId())
 
             images.append(newImg)
             iIds.append(newImg.getId())
 
         if len(iIds) == 0:
-            print "No new images created."
+            print("No new images created.")
             return
 
         if 'Container_Name' in parameterMap and \
            len(parameterMap['Container_Name'].strip()) > 0:
             # create a new dataset for new images
             datasetName = parameterMap['Container_Name']
-            print "\nMaking Dataset '%s' of Images from ROIs of Image: %s" \
-                % (datasetName, imageId)
-            print "physicalSize X, Y:  %s, %s" \
-                % (physicalSizeX, physicalSizeY)
+            print("\nMaking Dataset '%s' of Images from ROIs of Image: %s"
+                  % (datasetName, imageId))
+            print("physicalSize X, Y:  %s, %s"
+                  % (physicalSizeX, physicalSizeY))
             dataset = omero.model.DatasetI()
             dataset.name = rstring(datasetName)
             desc = "Images in this Dataset are from ROIs of parent Image:\n"\
@@ -265,8 +265,8 @@ def processImage(conn, imageId, parameterMap):
 
         if parentDataset is None:
             link = None
-            print "No dataset created or found for new images."\
-                " Images will be orphans."
+            print("No dataset created or found for new images."
+                  " Images will be orphans.")
         else:
             link = []
             for iid in iIds:
@@ -408,7 +408,7 @@ assumes that all the ROIs on each Image are the same size.""",
 
     try:
         parameterMap = client.getInputs(unwrap=True)
-        print parameterMap
+        print(parameterMap)
 
         # create a wrapper so we can use the Blitz Gateway.
         conn = BlitzGateway(client_obj=client)
@@ -422,6 +422,7 @@ assumes that all the ROIs on each Image are the same size.""",
     finally:
         client.closeSession()
         printDuration()
+
 
 if __name__ == "__main__":
     runAsScript()

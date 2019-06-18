@@ -47,7 +47,7 @@ from omero.rtypes import rint, rlong, rstring, robject, wrap
 from omero.constants.namespaces import NSCREATED
 from omero.constants.projection import ProjectionType
 import os
-import StringIO
+import io
 from datetime import date
 
 try:
@@ -71,9 +71,9 @@ def log(text):
     # Handle unicode
     try:
         text = text.encode('utf8')
-    except:
+    except Exception:
         pass
-    print text
+    print(text)
     logStrings.append(text)
 
 
@@ -172,7 +172,7 @@ def getSplitView(conn, pixelIds, zStart, zEnd, splitIndexes, channelNames,
         if not re.lookupRenderingDef(pixelsId):
             re.resetDefaults()
         if not re.lookupRenderingDef(pixelsId):
-            raise "Failed to lookup Rendering Def"
+            raise Exception("Failed to lookup Rendering Def")
         re.load()
 
         proStart = zStart
@@ -241,7 +241,7 @@ def getSplitView(conn, pixelIds, zStart, zEnd, splitIndexes, channelNames,
                         # and this channel is in the combined image
                         if index in mergedColours:
                             rgba = tuple(mergedColours[index])
-                            print "Setting channel to color", index, rgba
+                            print("Setting channel to color", index, rgba)
                             re.setRGBA(index, *rgba)        # set coloured
                         else:
                             mergedColours[index] = re.getRGBA(index)
@@ -286,14 +286,14 @@ def getSplitView(conn, pixelIds, zStart, zEnd, splitIndexes, channelNames,
             if img is None:
                 im = Image.new(mode, (sizeX, sizeY), (0, 0, 0))
             else:
-                im = Image.open(StringIO.StringIO(img))
+                im = Image.open(io.StringIO(img))
             i = imgUtil.resizeImage(im, width, height)
             imgUtil.pasteImage(i, canvas, px, py)
             px = px + width + spacer
             col = col + 1
 
         # add combined image, after resizing and adding scale bar
-        i = Image.open(StringIO.StringIO(overlay))
+        i = Image.open(io.StringIO(overlay))
         scaledImage = imgUtil.resizeImage(i, width, height)
         if scalebar:
             xIndent = spacer
@@ -466,7 +466,7 @@ def makeSplitViewFigure(conn, pixelIds, zStart, zEnd, splitIndexes,
             if (not colourChannels) and (index in mergedColours):
                 rgba = tuple(mergedColours[index])
                 if rgba == (255, 255, 255, 255):    # if white (unreadable),
-                                                    # needs to be black!
+                    # needs to be black!
                     rgba = (0, 0, 0, 255)
         draw.text((px+inset, py), channelNames[index], font=font, fill=rgba)
         px = px + width + spacer
@@ -474,14 +474,14 @@ def makeSplitViewFigure(conn, pixelIds, zStart, zEnd, splitIndexes,
     # add text for combined image
     if (mergedNames):
         mergedIndexes.reverse()
-        print "Adding merged channel names..."
+        print("Adding merged channel names...")
         for index in mergedIndexes:
             rgba = (0, 0, 0, 255)
             if index in mergedColours:
                 rgba = tuple(mergedColours[index])
                 log("%s %s %s" % (index, channelNames[index], rgba))
                 if rgba == (255, 255, 255, 255):    # if white (unreadable),
-                                                    # needs to be black!
+                    # needs to be black!
                     rgba = (0, 0, 0, 255)
             name = channelNames[index]
             combTextWidth = font.getsize(name)[0]
@@ -598,7 +598,7 @@ def splitViewFigure(conn, scriptParams):
     if "Split_Indexes" in scriptParams:
         splitIndexes = scriptParams["Split_Indexes"]
     else:
-        splitIndexes = range(sizeC)
+        splitIndexes = list(range(sizeC))
 
     # Make channel-names map. If argument wasn't specified, name by index
     channelNames = {}
@@ -620,15 +620,15 @@ def splitViewFigure(conn, scriptParams):
                 rgb = int(rgb)
                 cIndex = int(c)
             except ValueError:
-                print "Merged_Colours map should be index:rgbInt. Not %s:%s" \
-                    % (c, rgb)
+                print("Merged_Colours map should be index:rgbInt. Not %s:%s"
+                      % (c, rgb))
                 continue
             rgba = imgUtil.RGBIntToRGBA(rgb)
             mergedColours[cIndex] = rgba
             mergedIndexes.append(cIndex)
         mergedIndexes.sort()
     else:
-        mergedIndexes = range(sizeC)
+        mergedIndexes = list(range(sizeC))
 
     colourChannels = not scriptParams["Split_Panels_Grey"]
 
@@ -648,12 +648,12 @@ def splitViewFigure(conn, scriptParams):
 
     mergedNames = scriptParams["Merged_Names"]
 
-    print "splitIndexes", splitIndexes
-    print "channelNames", channelNames
-    print "colourChannels", colourChannels
-    print "mergedIndexes", mergedIndexes
-    print "mergedColours", mergedColours
-    print "mergedNames", mergedNames
+    print("splitIndexes", splitIndexes)
+    print("channelNames", channelNames)
+    print("colourChannels", colourChannels)
+    print("mergedIndexes", mergedIndexes)
+    print("mergedColours", mergedColours)
+    print("mergedNames", mergedNames)
     fig = makeSplitViewFigure(
         conn, pixelIds, zStart, zEnd, splitIndexes, channelNames,
         colourChannels, mergedIndexes, mergedColours, mergedNames, width,
@@ -704,9 +704,9 @@ def runAsScript():
     labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags')]
     algorithums = [rstring('Maximum Intensity'), rstring('Mean Intensity')]
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
-    ckeys = COLOURS.keys()
+    ckeys = list(COLOURS.keys())
     ckeys.sort()
-    oColours = wrap(OVERLAY_COLOURS.keys())
+    oColours = wrap(list(OVERLAY_COLOURS.keys()))
 
     client = scripts.client(
         'Split_View_Figure.py',
@@ -811,7 +811,7 @@ See http://help.openmicroscopy.org/scripts.html""",
         conn = BlitzGateway(client_obj=client)
 
         scriptParams = client.getInputs(unwrap=True)
-        print scriptParams
+        print(scriptParams)
 
         # call the main script, attaching resulting figure to Image. Returns
         # the FileAnnotationI
@@ -824,6 +824,7 @@ See http://help.openmicroscopy.org/scripts.html""",
 
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

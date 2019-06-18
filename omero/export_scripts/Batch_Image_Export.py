@@ -59,9 +59,9 @@ def log(text):
     # Handle unicode
     try:
         text = text.encode('utf8')
-    except:
+    except Exception:
         pass
-    print text
+    print(text)
     logStrings.append(str(text))
 
 
@@ -244,7 +244,7 @@ def savePlanesForImage(conn, image, sizeC, splitCs, mergedCs,
         tIndexes = [image.getDefaultT()+1]
     else:
         if len(tRange) > 1:
-            tIndexes = range(tRange[0], tRange[1])
+            tIndexes = list(range(tRange[0], tRange[1]))
         else:
             tIndexes = [tRange[0]]
 
@@ -382,7 +382,7 @@ def batchImageExport(conn, scriptParams):
     exp_dir = os.path.join(curr_dir, folder_name)
     try:
         os.mkdir(exp_dir)
-    except:
+    except Exception:
         pass
     # max size (default 12kx12k)
     size = conn.getDownloadAsMaxSizeSetting()
@@ -467,7 +467,7 @@ def batchImageExport(conn, scriptParams):
     # zip everything up (unless we've only got a single ome-tiff)
     if format == 'OME-TIFF' and len(os.listdir(exp_dir)) == 1:
         ometiffIds = [t.id for t in parent.listAnnotations(ns=NSOMETIFF)]
-        print "Deleting OLD ome-tiffs: %s" % ometiffIds
+        print("Deleting OLD ome-tiffs: %s" % ometiffIds)
         conn.deleteObjects("Annotation", ometiffIds)
         export_file = os.path.join(folder_name, os.listdir(exp_dir)[0])
         namespace = NSOMETIFF
@@ -616,11 +616,11 @@ See http://help.openmicroscopy.org/scripts.html""",
         # return this fileAnnotation to the client.
         client.setOutput("Message", rstring(message))
         if fileAnnotation is not None:
-                client.setOutput("File_Annotation",
-                                 robject(fileAnnotation._obj))
+            client.setOutput("File_Annotation", robject(fileAnnotation._obj))
 
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runScript()

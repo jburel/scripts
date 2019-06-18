@@ -56,7 +56,7 @@ def newImageWithChannelOffsets(conn, imageId, channel_offsets, dataset=None):
 
     oldImage = conn.getObject("Image", imageId)
     if oldImage is None:
-        print "Image not found for ID:", imageId
+        print("Image not found for ID:", imageId)
         return
 
     if dataset is None:
@@ -74,8 +74,8 @@ def newImageWithChannelOffsets(conn, imageId, channel_offsets, dataset=None):
     bigImage = rps.requiresPixelsPyramid()
     rps.close()
     if bigImage:
-        print "This script does not support 'BIG' images such as Image ID: " \
-            "%s X: %d Y: %d" % (imageId, sizeX, sizeY)
+        print("This script does not support 'BIG' images such as Image ID: "
+              "%s X: %d Y: %d" % (imageId, sizeX, sizeY))
         return
 
     # setup the (z,c,t) list of planes we need
@@ -87,7 +87,7 @@ def newImageWithChannelOffsets(conn, imageId, channel_offsets, dataset=None):
                     zOffset = offset['z']
                     zctList.append((z-zOffset, offset['index'], t))
 
-    print "zctList", zctList
+    print("zctList", zctList)
 
     # for convenience, make a map of channel:offsets
     offsetMap = {}
@@ -138,7 +138,7 @@ def newImageWithChannelOffsets(conn, imageId, channel_offsets, dataset=None):
             z, c, t = zctList[i]
             offsets = offsetMap[c]
             if z < 0 or z >= sizeZ:
-                print "Black plane for zct:", zctList[i]
+                print("Black plane for zct:", zctList[i])
                 if dt is None:
                     # if we are on our first plane, we don't know datatype
                     # yet...
@@ -146,12 +146,12 @@ def newImageWithChannelOffsets(conn, imageId, channel_offsets, dataset=None):
                     # hack! TODO: add method to pixels to supply dtype
                 plane = zeros((sizeY, sizeX), dt)
             else:
-                print "getPlane for zct:", zctList[i], "applying offsets:", \
-                    offsets
+                print("getPlane for zct:", zctList[i], "applying offsets:",
+                      offsets)
                 try:
                     plane = pixels.getPlane(*zctList[i])
                     dt = plane.dtype
-                except:
+                except Exception:
                     # E.g. the Z-index is out of range - Simply supply an
                     # array of zeros.
                     if dt is None:
@@ -171,7 +171,7 @@ def newImageWithChannelOffsets(conn, imageId, channel_offsets, dataset=None):
     desc += "\n".join(descLines)
     i = conn.createImageFromNumpySeq(
         offsetPlaneGen(), newImageName,
-        sizeZ=sizeZ, sizeC=len(offsetMap.items()), sizeT=sizeT,
+        sizeZ=sizeZ, sizeC=len(list(offsetMap.items())), sizeT=sizeT,
         description=desc, sourceImageId=imageId, channelList=channelList)
 
     # Link image to dataset
@@ -215,7 +215,7 @@ def processImages(conn, scriptParams):
                 scriptParams["Channel%s_Z_shift" % i] or 0
             channel_offsets.append({'index': index, 'x': x, 'y': y, 'z': z})
 
-    print channel_offsets
+    print(channel_offsets)
 
     dataset = None
     if "New_Dataset_Name" in scriptParams:
@@ -370,7 +370,7 @@ See http://help.openmicroscopy.org/utility-scripts.html""",
 
     try:
         scriptParams = client.getInputs(unwrap=True)
-        print scriptParams
+        print(scriptParams)
 
         # wrap client to use the Blitz Gateway
         conn = BlitzGateway(client_obj=client)
@@ -387,6 +387,7 @@ See http://help.openmicroscopy.org/utility-scripts.html""",
 
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

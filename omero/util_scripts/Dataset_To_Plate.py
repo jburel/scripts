@@ -61,15 +61,14 @@ def addImageToPlate(conn, image, plateId, column, row, removeFrom=None):
         ws.well = well
         well.addWellSample(ws)
         updateService.saveObject(ws)
-    except:
-        print "Failed to add image to well sample"
+    except Exception:
+        print("Failed to add image to well sample")
         return False
 
     # remove from Datast
     if removeFrom is not None:
         links = list(image.getParentLinks(removeFrom.id))
-        print "     Removing image from Dataset: %s" \
-            % removeFrom.id
+        print("     Removing image from Dataset: %s" % removeFrom.id)
         for l in links:
             conn.deleteObjectDirect(l._obj)
     return True
@@ -79,7 +78,7 @@ def dataset_to_plate(conn, scriptParams, datasetId, screen):
 
     dataset = conn.getObject("Dataset", datasetId)
     if dataset is None:
-        print "No dataset found for ID %s" % datasetId
+        print("No dataset found for ID %s" % datasetId)
         return
 
     updateService = conn.getUpdateService()
@@ -100,8 +99,8 @@ def dataset_to_plate(conn, scriptParams, datasetId, screen):
     else:
         link = None
 
-    print "Moving images from Dataset: %d to Plate: %d" \
-        % (dataset.id, plate.id.val)
+    print("Moving images from Dataset: %d to Plate: %d"
+          % (dataset.id, plate.id.val))
 
     row = 0
     col = 0
@@ -114,7 +113,7 @@ def dataset_to_plate(conn, scriptParams, datasetId, screen):
     datasetImgCount = len(images)
     if "Filter_Names" in scriptParams:
         filterBy = scriptParams["Filter_Names"]
-        print "Filtering images for names containing: %s" % filterBy
+        print("Filtering images for names containing: %s" % filterBy)
         images = [i for i in images if (i.getName().find(filterBy) >= 0)]
     images.sort(key=lambda x: x.name.lower())
 
@@ -126,8 +125,8 @@ def dataset_to_plate(conn, scriptParams, datasetId, screen):
         removeFrom = dataset
 
     for image in images:
-        print "    moving image: %d to row: %d, column: %d" \
-            % (image.id, row, col)
+        print("    moving image: %d to row: %d, column: %d"
+              % (image.id, row, col))
         addedCount = addImageToPlate(conn, image, plate.id.val, col, row,
                                      removeFrom)
         # update row and column index
@@ -148,7 +147,7 @@ def dataset_to_plate(conn, scriptParams, datasetId, screen):
     if deleteDataset:
         if datasetImgCount == addedCount:
             dcs = list()
-            print 'Deleting Dataset %d %s' % (dataset.id, dataset.name)
+            print('Deleting Dataset %d %s' % (dataset.id, dataset.name))
             options = None  # {'/Image': 'KEEP'}    # don't delete the images!
             dcs.append(omero.api.delete.DeleteCommand(
                 "/Dataset", dataset.id, options))
@@ -176,8 +175,8 @@ def datasets_to_plates(conn, scriptParams):
         n_wells = unwrap(conn.getQueryService().projection(
             query, params, conn.SERVICE_OPTS)[0])[0]
         if n_wells > 0:
-            print "Dataset %s contains images linked to wells." \
-                % dataset.getId()
+            print("Dataset %s contains images linked to wells."
+                  % dataset.getId())
             return True
         else:
             return False
@@ -209,7 +208,7 @@ def datasets_to_plates(conn, scriptParams):
         s = scriptParams["Screen"]
         # see if this is ID of existing screen
         try:
-            screenId = long(s)
+            screenId = int(s)
             screen = conn.getObject("Screen", screenId)
         except ValueError:
             pass
@@ -238,14 +237,14 @@ def datasets_to_plates(conn, scriptParams):
         cb = omero.callbacks.DeleteCallbackI(conn.c, handle)
         while True:  # ms
             if cb.block(100) is None:
-                print "Waiting for delete"
+                print("Waiting for delete")
             else:
                 break
         err = handle.errors()
         if err > 0:
-            print "Delete error", err
+            print("Delete error", err)
         else:
-            print "Delete OK"
+            print("Delete OK")
 
     if newscreen:
         message += "New screen created: %s." % newscreen.getName().val
@@ -339,7 +338,7 @@ See http://help.openmicroscopy.org/utility-scripts.html""",
 
     try:
         scriptParams = client.getInputs(unwrap=True)
-        print scriptParams
+        print(scriptParams)
 
         # wrap client to use the Blitz Gateway
         conn = BlitzGateway(client_obj=client)
@@ -353,6 +352,7 @@ See http://help.openmicroscopy.org/utility-scripts.html""",
 
     finally:
         client.closeSession()
+
 
 if __name__ == "__main__":
     runAsScript()

@@ -213,10 +213,10 @@ def processPolyLines(conn, scriptParams, image, polylines, lineWidth, fout):
                 lData.append(ld)
             lineData = hstack(lData)
 
-            print 'Image_ID, ROI_ID, Z, T, C, PolylineData.shape:" \
-                " %s, %s, %s, %s, %s, %s' \
-                % (image.getId(), roiId, theZ+1, theT+1, theC+1,
-                   str(lineData.shape))
+            print('Image_ID, ROI_ID, Z, T, C, PolylineData.shape:" \
+                  " %s, %s, %s, %s, %s, %s'
+                  % (image.getId(), roiId, theZ+1, theT+1, theC+1,
+                     str(lineData.shape)))
 
             if scriptParams['Sum_or_Average'] == 'Sum':
                 outputData = lineData.sum(axis=0)
@@ -263,10 +263,10 @@ def processLines(conn, scriptParams, image, lines, lineWidth, fout):
             lineData = getLineData(pixels, l['x1'], l['y1'], l['x2'], l['y2'],
                                    lineWidth, theZ, theC, theT)
 
-            print 'Image_ID, ROI_ID, Z, T, C, LineData.shape:" \
-                " %s, %s, %s, %s, %s, %s' \
-                % (image.getId(), roiId, theZ+1,
-                   theT+1, theC+1, str(lineData.shape))
+            print('Image_ID, ROI_ID, Z, T, C, LineData.shape:" \
+                  " %s, %s, %s, %s, %s, %s'
+                  % (image.getId(), roiId, theZ+1,
+                     theT+1, theC+1, str(lineData.shape)))
 
             if scriptParams['Sum_or_Average'] == 'Sum':
                 outputData = lineData.sum(axis=0)
@@ -324,9 +324,9 @@ def processImages(conn, scriptParams):
             scriptParams['Channels'] = [i-1 for i in scriptParams['Channels']]
             # Convert user input from 1-based to 0-based
             for i in scriptParams['Channels']:
-                print i, type(i)
+                print(i, type(i))
         else:
-            scriptParams['Channels'] = range(sizeC)
+            scriptParams['Channels'] = list(range(sizeC))
 
         # channelMinMax = []
         # for c in image.getChannels():
@@ -361,7 +361,7 @@ def processImages(conn, scriptParams):
                                       'points': points})
 
         if len(lines) == 0 and len(polylines) == 0:
-            print "Image: %s had no lines or polylines" % image.getId()
+            print("Image: %s had no lines or polylines" % image.getId())
             continue
 
         # prepare column headers, including line-id if we are going to output
@@ -371,7 +371,7 @@ def processImages(conn, scriptParams):
         colHeader = 'Image_ID, ROI_ID, Z, T, C, %sLine data %s of Line" \
             " Width %s\n' % (lineId, scriptParams['Sum_or_Average'],
                              scriptParams['Line_Width'])
-        print 'colHeader', colHeader
+        print('colHeader', colHeader)
 
         # prepare a csv file to write our data to...
         fileName = "Plot_Profile_%s.csv" % image.getId()
@@ -400,6 +400,7 @@ def processImages(conn, scriptParams):
     message += faMessage
 
     return fileAnns, message
+
 
 if __name__ == "__main__":
 
@@ -445,7 +446,7 @@ and outputs the data as CSV files, for plotting in e.g. Excel.""",
 
     try:
         scriptParams = client.getInputs(unwrap=True)
-        print scriptParams
+        print(scriptParams)
 
         # wrap client to use the Blitz Gateway
         conn = BlitzGateway(client_obj=client)

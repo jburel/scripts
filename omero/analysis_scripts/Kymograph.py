@@ -215,8 +215,8 @@ def polyLineKymograph(conn, scriptParams, image, polylines, lineWidth,
             firstShape = polylines[t]
             break
 
-    print "\nCreating Kymograph image from 'polyline' ROI. First polyline:", \
-        firstShape
+    print("\nCreating Kymograph image from 'polyline' ROI. First polyline:",
+          firstShape)
 
     def planeGen():
         """ Final image is single Z and T. Each plane is rows of T-slices """
@@ -289,7 +289,7 @@ def linesKymograph(conn, scriptParams, image, lines, lineWidth, dataset):
             firstLine = lines[t]
             break
 
-    print "\nCreating Kymograph image from 'line' ROI. First line:", firstLine
+    print("\nCreating Kymograph image from 'line' ROI. First line:", firstLine)
 
     def planeGen():
         """ Final image is single Z and T. Each plane is rows of T-slices """
@@ -352,8 +352,8 @@ def processImages(conn, scriptParams):
 
     for image in images:
         if image.getSizeT() == 1:
-            print "Image: %s is not a movie (sizeT = 1)"\
-                " - Can't create Kymograph" % image.getId()
+            print("Image: %s is not a movie (sizeT = 1)"
+                  " - Can't create Kymograph" % image.getId())
             continue
         newImages = []      # kymographs derived from the current image.
         cNames = []
@@ -413,21 +413,21 @@ def processImages(conn, scriptParams):
                     conn, scriptParams, image, polylines, lineWidth, dataset)
                 newImages.append(newImg)
             else:
-                print "ROI: %s had no lines or polylines" \
-                    % roi.getId().getValue()
+                print("ROI: %s had no lines or polylines"
+                      % roi.getId().getValue())
 
         # look-up the interval for each time-point
         tInterval = None
         infos = list(pixels.copyPlaneInfo(theC=0, theT=sizeT-1, theZ=0))
         if len(infos) > 0 and infos[0].getDeltaT() is not None:
             duration = infos[0].getDeltaT(units="SECOND").getValue()
-            print "duration", duration
+            print("duration", duration)
             if sizeT == 1:
                 tInterval = duration
             else:
                 tInterval = duration/(sizeT-1)
         elif pixels.timeIncrement is not None:
-            print "pixels.timeIncrement", pixels.timeIncrement
+            print("pixels.timeIncrement", pixels.timeIncrement)
             tInterval = pixels.timeIncrement
         elif "Time_Increment" in scriptParams:
             tInterval = scriptParams["Time_Increment"]
@@ -440,7 +440,7 @@ def processImages(conn, scriptParams):
 
         # Save channel names and colors for each new image
         for img in newImages:
-            print "Applying channel Names:", cNames, " Colors:", colors
+            print("Applying channel Names:", cNames, " Colors:", colors)
             for i, c in enumerate(img.getChannels()):
                 lc = c.getLogicalChannel()
                 lc.setName(cNames[i])
@@ -485,6 +485,7 @@ def processImages(conn, scriptParams):
                 % (len(newImages), linkMessage)
 
     return newKymographs, message
+
 
 if __name__ == "__main__":
 
@@ -533,7 +534,7 @@ same sizeC as input.""",
 
     try:
         scriptParams = client.getInputs(unwrap=True)
-        print scriptParams
+        print(scriptParams)
 
         # wrap client to use the Blitz Gateway
         conn = BlitzGateway(client_obj=client)
