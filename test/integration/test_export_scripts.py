@@ -94,7 +94,7 @@ class TestExportScripts(ScriptTest):
 
         image_ids = []
         file_name = "test_batch_roi_export"
-        image_ids.append(rint(image.id.val))
+        image_ids.append(rlong(image.id.val))
         channels = [rint(c) for c in range(4)]
         args = {
             "Data_Type": rstring("Image"),
